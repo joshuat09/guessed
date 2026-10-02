@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GUESSED</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="game-container">
+
+        <!-- HOME SCREEN -->
+        <section id="home-screen" class="screen active">
+
+            <div class="logo">GUESSED</div>
+
+            <p class="tagline">How good is your intuition?</p>
+
+            <div class="home-card">
+
+                <div class="daily-label">TODAY'S GAME</div>
+
+                <h1>5 questions.<br>One score.</h1>
+
+                <p>
+                    Guess the answer. See how close you really were.
+                </p>
+
+                <button id="start-button">PLAY TODAY</button>
+
+            </div>
+
+            <div class="streak">
+                🔥 <span id="streak-number">0</span> day streak
+            </div>
+
+        </section>
+
+
+        <!-- QUESTION SCREEN -->
+        <section id="question-screen" class="screen">
+
+            <div class="top-bar">
+                <div class="logo-small">GUESSED</div>
+                <div id="question-number">1 / 5</div>
+            </div>
+
+            <div class="question-card">
+
+                <div class="category" id="category">PRICE</div>
+
+                <h2 id="question">
+                    How much does a weekly supermarket shop for two people cost?
+                </h2>
+
+                <div class="answer-area">
+
+                    <span class="currency">£</span>
+
+                    <input
+                        type="number"
+                        id="answer-input"
+                        placeholder="0"
+                        min="0"
+                    >
+
+                </div>
+
+                <button id="submit-button">SUBMIT GUESS</button>
+
+                <p class="hint">Trust your instinct.</p>
+
+            </div>
+
+        </section>
+
+
+        <!-- RESULT SCREEN -->
+        <section id="result-screen" class="screen">
+
+            <div class="logo-small">GUESSED</div>
+
+            <div class="result-card">
+
+                <div class="category" id="result-category">
+                    ACTUAL PRICE
+                </div>
+
+                <div class="actual-answer" id="actual-answer">
+                    £86.42
+                </div>
+
+                <div class="guess-text">
+                    YOUR GUESS
+                </div>
+
+                <div class="your-answer" id="your-answer">
+                    £91.00
+                </div>
+
+                <div class="score-divider"></div>
+
+                <div class="score-label">YOUR SCORE</div>
+
+                <div class="score" id="score">
+                    94
+                </div>
+
+                <div class="score-message" id="score-message">
+                    VERY CLOSE 👏
+                </div>
+
+                <button id="next-button">NEXT →</button>
+
+            </div>
+
+        </section>
+
+
+        <!-- FINAL SCREEN -->
+        <section id="final-screen" class="screen">
+
+            <div class="logo">GUESSED</div>
+
+            <p class="tagline">Today's game complete.</p>
+
+            <div class="final-card">
+
+                <div class="final-label">YOUR SCORE</div>
+
+                <div class="final-score" id="final-score">
+                    421
+                </div>
+
+                <div class="out-of">OUT OF 500</div>
+
+                <div class="performance">
+                    You beat <strong id="percentile">76%</strong> of players.
+                </div>
+
+                <div class="result-grid">
+
+                    <div>
+                        <span>PRICE</span>
+                        <strong id="price-score">94</strong>
+                    </div>
+
+                    <div>
+                        <span>SCALE</span>
+                        <strong>87</strong>
+                    </div>
+
+                    <div>
+                        <span>HUMAN</span>
+                        <strong>76</strong>
+                    </div>
+
+                    <div>
+                        <span>CROWD</span>
+                        <strong>91</strong>
+                    </div>
+
+                    <div>
+                        <span>TIME</span>
+                        <strong>73</strong>
+                    </div>
+
+                </div>
+
+                <button id="play-again">PLAY AGAIN</button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
