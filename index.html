@@ -62,7 +62,17 @@
           <div class="answer-area human-answer-area"><input type="number" id="human-answer-input" placeholder="0" min="0" max="100" step="1" inputmode="numeric" aria-label="Your percentage estimate, from 0 to 100 percent" autocomplete="off"><span class="percent-unit" aria-hidden="true">%</span></div>
         </div>
         <p id="human-data-note" class="development-note" hidden>Development placeholder data — not research-verified.</p>
-        <button id="submit-button" class="primary-button" type="button">SUBMIT GUESS <span aria-hidden="true">→</span></button>
+        <div id="crowd-input" class="crowd-input" hidden>
+          <div id="crowd-options" class="crowd-options" role="radiogroup" aria-label="Choose the answer you think most people would pick"></div>
+        </div>
+        <div id="time-input" class="time-input" hidden>
+          <output id="time-estimate" class="time-estimate" for="time-slider">2000</output>
+          <label class="input-label" for="time-slider">CHOOSE A YEAR</label>
+          <input id="time-slider" class="time-slider" type="range" min="1900" step="1" value="2000" aria-label="Choose an estimated year">
+          <div class="time-endpoints" aria-hidden="true"><span id="time-min-label">1900</span><span id="time-max-label">CURRENT YEAR</span></div>
+          <div class="time-direction" aria-hidden="true"><span>PAST</span><span>HISTORICAL TIMELINE</span><span>PRESENT</span></div>
+        </div>
+        <button id="submit-button" class="primary-button" type="button" disabled>PREDICT THE CROWD <span aria-hidden="true">→</span></button>
 
         <p class="hint">Trust your instinct.</p>
       </article>
@@ -72,9 +82,23 @@
     <section id="result-screen" class="screen" aria-labelledby="result-title" aria-live="polite">
       <header class="top-bar"><div class="logo-small">GUESSED<span class="brand-dot">.</span></div><div class="progress-wrap"><span class="progress-caption">QUESTION</span><span id="result-question-number" class="progress-count">1 / 5</span></div></header>
       <article class="result-card">
-        <div class="guess-block"><div class="small-label">YOUR GUESS</div><div class="your-answer" id="your-answer">£91.00</div></div>
-        <div class="reveal-connector" aria-hidden="true"><span></span> THEN <span></span></div>
-        <div class="actual-block"><div class="result-category" id="result-category">ACTUAL PRICE</div><div class="actual-answer" id="actual-answer">£86.42</div></div>
+        <div id="guess-block" class="guess-block"><div class="small-label">YOUR GUESS</div><div class="your-answer" id="your-answer">£91.00</div></div>
+        <div id="reveal-connector" class="reveal-connector" aria-hidden="true"><span></span> THEN <span></span></div>
+        <div id="actual-block" class="actual-block"><div class="result-category" id="result-category">ACTUAL PRICE</div><div class="actual-answer" id="actual-answer">£86.42</div></div>
+        <section id="crowd-results" class="crowd-results" aria-label="Simulated crowd results" hidden>
+          <div class="crowd-data-status">SIMULATED CROWD · DEVELOPMENT DATA</div>
+          <h2 class="crowd-results-title">WHAT THE CROWD CHOSE</h2>
+          <div id="crowd-result-list" class="crowd-result-list"></div>
+          <div class="crowd-pick-summary">
+            <div class="crowd-pick"><div class="small-label">YOUR PICK</div><div id="crowd-pick" class="your-answer"></div></div>
+            <div class="crowd-pick"><div class="small-label">CROWD'S TOP PICK</div><div id="crowd-top-pick" class="your-answer"></div></div>
+          </div>
+        </section>
+        <figure id="time-result" class="time-result" aria-label="Timeline showing the actual and guessed years" hidden>
+          <div class="time-result-endpoints" aria-hidden="true"><span id="time-result-min">1900</span><span id="time-result-max">CURRENT YEAR</span></div>
+          <div class="time-result-rail" aria-hidden="true"><span id="time-actual-marker" class="time-result-marker actual-marker"></span><span id="time-guess-marker" class="time-result-marker guess-marker"></span></div>
+          <figcaption class="time-result-legend"><span>ACTUAL <strong id="time-actual-year"></strong></span><span>YOUR GUESS <strong id="time-guess-year"></strong></span></figcaption>
+        </figure>
         <div class="score-divider"></div>
         <div class="score-label" id="result-title">YOUR SCORE</div>
         <div class="score" id="score" aria-label="Score">0</div>
@@ -86,18 +110,16 @@
     <section id="final-screen" class="screen" aria-labelledby="final-title">
       <header class="brand-lockup final-brand"><div class="logo">GUESSED<span class="brand-dot">.</span></div><p class="tagline" id="final-title">Today's game complete.</p></header>
       <article class="final-card">
+        <div class="final-label" id="daily-game-number">GUESSED #001</div>
         <div class="final-label">YOUR SCORE</div>
         <div class="final-score-line"><div class="final-score" id="final-score">421</div><span class="final-score-slash" aria-hidden="true">/</span><div class="out-of">500<br><span>POINTS</span></div></div>
         <div class="performance">You beat <strong id="percentile">76%</strong> of players.</div>
-        <div class="result-grid" aria-label="Category scores">
-          <div class="category-score"><span>PRICE</span><strong id="price-score">0</strong></div>
-          <div class="category-score"><span>SCALE</span><strong id="scale-score">0</strong></div>
-          <div class="category-score"><span>HUMAN</span><strong id="human-score">0</strong></div>
-        </div>
+        <div id="category-score-list" class="result-grid" aria-label="Category scores"></div>
         <button id="play-again" class="primary-button" type="button">PLAY AGAIN <span aria-hidden="true">↻</span></button>
       </article>
     </section>
   </main>
+  <script src="questions.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
