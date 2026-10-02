@@ -4,8 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f2e9">
-  <meta name="description" content="A little daily test of your intuition. Five questions. One score.">
-  <title>GUESSED — How good is your intuition?</title>
+  <meta name="description" content="Daily 5 or play a category. How good are your guesses?">
+  <title>GUESSED — How good are your guesses?</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body data-scene="home-screen">
@@ -30,21 +30,29 @@
     <section id="home-screen" class="screen active" aria-labelledby="home-title">
       <header class="brand-lockup">
         <div class="logo">GUESSED<span class="brand-dot">.</span></div>
-        <p class="tagline">How good is your intuition?</p>
+        <p class="tagline">How good are your guesses?</p>
       </header>
-      <article class="home-card">
-        <div class="eyebrow"><span class="live-dot" aria-hidden="true"></span> TODAY'S GAME</div>
-        <h1 id="home-title">5 questions.<br>5 different ways to think.</h1>
-        <p class="home-copy">A quick daily check of what your gut already knows.</p>
+      <h1 id="home-title" class="hub-heading">Pick your game.</h1>
+      <article class="home-card daily-card">
+        <div class="eyebrow"><span class="live-dot" aria-hidden="true"></span> DAILY CHALLENGE</div>
+        <div class="daily-title-row"><h2>DAILY 5</h2><span id="home-daily-number" class="daily-number">GUESSED #001</span></div>
+        <p class="home-copy">5 questions. Same for everyone. Every day.</p>
         <button id="start-button" class="primary-button" type="button">PLAY TODAY <span aria-hidden="true">→</span></button>
-        <div class="card-footnote">Takes about 2 minutes <span aria-hidden="true">·</span> No sign-up needed</div>
       </article>
-      <div class="streak"><span class="flame" aria-hidden="true">🔥</span><span><strong id="streak-number">0</strong> day streak</span></div>
-      <p class="home-note">One new game, every day.</p>
+      <section class="mode-section" aria-labelledby="mode-heading">
+        <div class="mode-section-heading"><h2 id="mode-heading">MORE WAYS TO PLAY</h2><span>Pick a category</span></div>
+        <div class="mode-grid">
+          <article class="mode-card mode-price"><h3>PRICE</h3><p>Guess what things cost.</p><button class="mode-play" type="button" data-mode="price">PLAY <span aria-hidden="true">→</span></button></article>
+          <article class="mode-card mode-scale"><h3>SCALE</h3><p>Estimate size, distance and numbers.</p><button class="mode-play" type="button" data-mode="scale">PLAY <span aria-hidden="true">→</span></button></article>
+          <article class="mode-card mode-human"><h3>HUMAN</h3><p>Predict human behaviour.</p><button class="mode-play" type="button" data-mode="human">PLAY <span aria-hidden="true">→</span></button></article>
+          <article class="mode-card mode-crowd"><h3>CROWD</h3><p>Predict what everyone else chooses.</p><button class="mode-play" type="button" data-mode="crowd">PLAY <span aria-hidden="true">→</span></button></article>
+          <article class="mode-card mode-time"><h3>TIME</h3><p>Estimate when things happened.</p><button class="mode-play" type="button" data-mode="time">PLAY <span aria-hidden="true">→</span></button></article>
+        </div>
+      </section>
     </section>
 
     <section id="question-screen" class="screen" aria-labelledby="question">
-      <header class="top-bar"><div class="logo-small">GUESSED<span class="brand-dot">.</span></div><div class="progress-wrap"><span class="progress-caption">TODAY'S GAME</span><span id="question-number" class="progress-count">1 / 5</span></div></header>
+      <header class="top-bar"><button id="game-home-button" class="text-button" type="button">← HOME</button><div class="logo-small">GUESSED<span class="brand-dot">.</span></div><div class="progress-wrap"><span id="progress-caption" class="progress-caption">DAILY 5</span><span id="question-number" class="progress-count">1 / 5</span></div></header>
       <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
       <article class="question-card">
         <div class="eyebrow category"><span class="category-mark" aria-hidden="true"></span><span id="category">PRICE</span></div>
@@ -80,7 +88,7 @@
     </section>
 
     <section id="result-screen" class="screen" aria-labelledby="result-title" aria-live="polite">
-      <header class="top-bar"><div class="logo-small">GUESSED<span class="brand-dot">.</span></div><div class="progress-wrap"><span class="progress-caption">QUESTION</span><span id="result-question-number" class="progress-count">1 / 5</span></div></header>
+      <header class="top-bar"><button id="result-home-button" class="text-button" type="button">← HOME</button><div class="logo-small">GUESSED<span class="brand-dot">.</span></div><div class="progress-wrap"><span class="progress-caption">QUESTION</span><span id="result-question-number" class="progress-count">1 / 5</span></div></header>
       <article class="result-card">
         <div id="guess-block" class="guess-block"><div class="small-label">YOUR GUESS</div><div class="your-answer" id="your-answer">£91.00</div></div>
         <div id="reveal-connector" class="reveal-connector" aria-hidden="true"><span></span> THEN <span></span></div>
@@ -108,14 +116,16 @@
     </section>
 
     <section id="final-screen" class="screen" aria-labelledby="final-title">
-      <header class="brand-lockup final-brand"><div class="logo">GUESSED<span class="brand-dot">.</span></div><p class="tagline" id="final-title">Today's game complete.</p></header>
+      <header class="brand-lockup final-brand"><div class="logo">GUESSED<span class="brand-dot">.</span></div><p class="tagline" id="final-title">COMPLETE</p></header>
       <article class="final-card">
         <div class="final-label" id="daily-game-number">GUESSED #001</div>
-        <div class="final-label">YOUR SCORE</div>
-        <div class="final-score-line"><div class="final-score" id="final-score">421</div><span class="final-score-slash" aria-hidden="true">/</span><div class="out-of">500<br><span>POINTS</span></div></div>
-        <div class="performance">You beat <strong id="percentile">76%</strong> of players.</div>
+        <div class="final-label">TOTAL SCORE</div>
+        <div class="final-score-line"><div class="final-score" id="final-score">421</div><span class="final-score-slash" aria-hidden="true">/</span><div class="out-of"><span id="score-maximum">500</span><br><span>POINTS</span></div></div>
+        <div id="performance" class="performance">You beat <strong id="percentile">76%</strong> of players.</div>
         <div id="category-score-list" class="result-grid" aria-label="Category scores"></div>
+        <button id="copy-result" class="secondary-button" type="button">COPY RESULT</button>
         <button id="play-again" class="primary-button" type="button">PLAY AGAIN <span aria-hidden="true">↻</span></button>
+        <button id="final-home-button" class="text-button final-home-button" type="button">HOME</button>
       </article>
     </section>
   </main>

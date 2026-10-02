@@ -48,6 +48,7 @@ let roundResults = [];
 let selectedCrowdOption = null;
 let dailyDateKey = null;
 let dailyQuestionIds = [];
+let gameMode = null;
 const screens = ["home-screen", "question-screen", "result-screen", "final-screen"].map((id) => document.getElementById(id));
 const startButton = document.getElementById("start-button");
 const submitButton = document.getElementById("submit-button");
@@ -97,6 +98,13 @@ const scoreDisplay = document.getElementById("score");
 const scoreMessage = document.getElementById("score-message");
 const finalScore = document.getElementById("final-score");
 const dailyGameNumberDisplay = document.getElementById("daily-game-number");
+const homeDailyNumberDisplay = document.getElementById("home-daily-number");
+const progressCaption = document.getElementById("progress-caption");
+const scoreMaximum = document.getElementById("score-maximum");
+const performance = document.getElementById("performance");
+const finalTitle = document.getElementById("final-title");
+const copyResultButton = document.getElementById("copy-result");
+homeDailyNumberDisplay.textContent = `GUESSED #${String(getDailyGameNumber(getDailyDateKey())).padStart(3, "0")}`;
 const percentile = document.getElementById("percentile");
 const categoryScoreList = document.getElementById("category-score-list");
 
@@ -237,6 +245,7 @@ function renderCrowdResults(item, selectedId) {
 
 function loadQuestion() {
   const item = questions[currentQuestion];
+  progressCaption.textContent = gameMode ? `${gameMode.toUpperCase()} MODE` : "DAILY 5";
   questionNumber.textContent = `${currentQuestion + 1} / ${questions.length}`;
   resultQuestionNumber.textContent = questionNumber.textContent;
   progressFill.style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
@@ -390,21 +399,37 @@ function submitGuess() {
   document.body.dataset.celebration = questionScore >= 85 ? "high" : questionScore >= 50 ? "close" : "low";
   showScreen(screens[2]);
   animateScore(questionScore);
+  if (currentQuestion === questions.length - 1) {
+    nextButton.hidden = true;
+    finishGame();
+    return;
+  }
+  nextButton.hidden = false;
+  nextButton.innerHTML = 'NEXT <span aria-hidden="true">→</span>';
   nextButton.focus();
 }
 
 function finishGame() {
-  dailyGameNumberDisplay.textContent = `GUESSED #${String(getDailyGameNumber(dailyDateKey)).padStart(3, "0")}`;
+  const maximumScore = questions.length * 100;
+  dailyGameNumberDisplay.textContent = gameMode ? `${gameMode.toUpperCase()} MODE` : `GUESSED #${String(getDailyGameNumber(dailyDateKey)).padStart(3, "0")}`;
+  finalTitle.textContent = "COMPLETE";
+  scoreMaximum.textContent = String(maximumScore);
   finalScore.textContent = String(totalScore);
-  const averageScore = totalScore / questions.length;
-  percentile.textContent = `${Math.min(99, Math.max(1, Math.round(averageScore * 0.85)))}%`;
+  performance.hidden = Boolean(gameMode);
+  if (!gameMode) {
+    homeDailyNumberDisplay.textContent = dailyGameNumberDisplay.textContent;
+    const averageScore = totalScore / questions.length;
+    percentile.textContent = `${Math.min(99, Math.max(1, Math.round(averageScore * 0.85)))}%`;
+  }
   const categoryScores = roundResults.reduce((scores, result) => {
     if (!scores[result.category]) scores[result.category] = [];
     scores[result.category].push(result.score);
     return scores;
   }, {});
   categoryScoreList.replaceChildren();
-  ROUND_TYPES.forEach((type) => {
+  const scoreTypes = gameMode ? [gameMode] : ROUND_TYPES;
+  categoryScoreList.classList.toggle("single-score", Boolean(gameMode));
+  scoreTypes.forEach((type) => {
     const categoryName = type.toUpperCase();
     const scores = categoryScores[categoryName];
     if (!scores || scores.length === 0) return;
@@ -423,19 +448,80 @@ function finishGame() {
 
 function startGame(dateKey = getDailyDateKey()) {
   dailyDateKey = dateKey;
-  questions = ROUND_TYPES.map((type) => getDailyQuestion(type, dailyDateKey)).filter(Boolean);
-  dailyQuestionIds = questions.map((item) => item.id);
+  if (gameMode) {
+    questions = [...(window.GUESSED.questionBank[gameMode] || [])];
+  } else {
+    questions = ROUND_TYPES.map((type) => getDailyQuestion(type, dailyDateKey)).filter(Boolean);
+    dailyQuestionIds = questions.map((item) => item.id);
+    homeDailyNumberDisplay.textContent = `GUESSED #${String(getDailyGameNumber(dailyDateKey)).padStart(3, "0")}`;
+  }
   currentQuestion = 0;
   totalScore = 0;
   roundResults = [];
   selectedCrowdOption = null;
   showScreen(screens[1]);
+  nextButton.hidden = false;
   loadQuestion();
 }
 
-startButton.addEventListener("click", startGame);
+function startDailyGame() {
+  gameMode = null;
+  startGame(getDailyDateKey());
+}
+
+function startModeGame(type) {
+  if (!ROUND_TYPES.includes(type)) return;
+  gameMode = type;
+  startGame(dailyDateKey || getDailyDateKey());
+}
+
+function returnHome() {
+  showScreen(screens[0]);
+}
+
+async function copyResult() {
+  const numberLabel = gameMode ? `${gameMode.toUpperCase()} MODE` : `GUESSED #${String(getDailyGameNumber(dailyDateKey)).padStart(3, "0")}`;
+  const icons = { price: "💷", scale: "📏", human: "🧠", crowd: "👥", time: "⏳" };
+  const categoryLines = roundResults.map((result) => `${icons[result.type]} ${result.score}`);
+  const resultText = `${numberLabel}\n\n${totalScore}/${questions.length * 100}\n\n${categoryLines.join("\n")}\n\nPlay GUESSED:\nhttps://joshuat09.github.io/guessed/`;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(resultText);
+    } else {
+      throw new Error("Clipboard API unavailable");
+    }
+    copyResultButton.textContent = "COPIED!";
+  } catch (error) {
+    let copied = false;
+    let temporary;
+    try {
+      temporary = document.createElement("textarea");
+      temporary.value = resultText;
+      temporary.setAttribute("readonly", "");
+      temporary.style.position = "fixed";
+      temporary.style.opacity = "0";
+      document.body.append(temporary);
+      temporary.select();
+      copied = document.execCommand("copy");
+    } catch (fallbackError) {
+      copied = false;
+    } finally {
+      temporary?.remove();
+    }
+    if (copied) copyResultButton.textContent = "COPIED!";
+    else window.prompt("Copy your spoiler-free result:", resultText);
+  }
+  window.setTimeout(() => { copyResultButton.textContent = "COPY RESULT"; }, 1800);
+}
+
+startButton.addEventListener("click", startDailyGame);
+document.querySelectorAll("[data-mode]").forEach((button) => button.addEventListener("click", () => startModeGame(button.dataset.mode)));
 playAgainButton.addEventListener("click", () => startGame(dailyDateKey || getDailyDateKey()));
 submitButton.addEventListener("click", submitGuess);
+copyResultButton.addEventListener("click", copyResult);
+document.getElementById("game-home-button").addEventListener("click", returnHome);
+document.getElementById("result-home-button").addEventListener("click", returnHome);
+document.getElementById("final-home-button").addEventListener("click", returnHome);
 scaleSlider.addEventListener("input", updateScaleEstimate);
 timeSlider.addEventListener("input", updateTimeEstimate);
 nextButton.addEventListener("click", () => {
