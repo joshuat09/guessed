@@ -57,6 +57,11 @@
           <input id="scale-slider" class="scale-slider" type="range" min="0" max="500" step="1" value="0" aria-label="Your measurement estimate">
           <div class="scale-endpoints" aria-hidden="true"><span id="scale-min">0 m</span><span id="scale-max">500 m</span></div>
         </div>
+        <div id="human-input" class="human-input" hidden>
+          <label class="input-label" for="human-answer-input">YOUR ESTIMATE</label>
+          <div class="answer-area human-answer-area"><input type="number" id="human-answer-input" placeholder="0" min="0" max="100" step="1" inputmode="numeric" aria-label="Your percentage estimate, from 0 to 100 percent" autocomplete="off"><span class="percent-unit" aria-hidden="true">%</span></div>
+        </div>
+        <p id="human-data-note" class="development-note" hidden>Development placeholder data — not research-verified.</p>
         <button id="submit-button" class="primary-button" type="button">SUBMIT GUESS <span aria-hidden="true">→</span></button>
 
         <p class="hint">Trust your instinct.</p>
@@ -87,6 +92,7 @@
         <div class="result-grid" aria-label="Category scores">
           <div class="category-score"><span>PRICE</span><strong id="price-score">0</strong></div>
           <div class="category-score"><span>SCALE</span><strong id="scale-score">0</strong></div>
+          <div class="category-score"><span>HUMAN</span><strong id="human-score">0</strong></div>
         </div>
         <button id="play-again" class="primary-button" type="button">PLAY AGAIN <span aria-hidden="true">↻</span></button>
       </article>
