@@ -1,183 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GUESSED</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f2e9">
+  <meta name="description" content="A little daily test of your intuition. Five questions. One score.">
+  <title>GUESSED — How good is your intuition?</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
-<body>
-
-    <main class="game-container">
-
-        <!-- HOME SCREEN -->
-        <section id="home-screen" class="screen active">
-
-            <div class="logo">GUESSED</div>
-
-            <p class="tagline">How good is your intuition?</p>
-
-            <div class="home-card">
-
-                <div class="daily-label">TODAY'S GAME</div>
-
-                <h1>5 questions.<br>One score.</h1>
-
-                <p>
-                    Guess the answer. See how close you really were.
-                </p>
-
-                <button id="start-button">PLAY TODAY</button>
-
-            </div>
-
-            <div class="streak">
-                🔥 <span id="streak-number">0</span> day streak
-            </div>
-
-        </section>
-
-
-        <!-- QUESTION SCREEN -->
-        <section id="question-screen" class="screen">
-
-            <div class="top-bar">
-                <div class="logo-small">GUESSED</div>
-                <div id="question-number">1 / 5</div>
-            </div>
-
-            <div class="question-card">
-
-                <div class="category" id="category">PRICE</div>
-
-                <h2 id="question">
-                    How much does a weekly supermarket shop for two people cost?
-                </h2>
-
-                <div class="answer-area">
-
-                    <span class="currency">£</span>
-
-                    <input
-                        type="number"
-                        id="answer-input"
-                        placeholder="0"
-                        min="0"
-                    >
-
-                </div>
-
-                <button id="submit-button">SUBMIT GUESS</button>
-
-                <p class="hint">Trust your instinct.</p>
-
-            </div>
-
-        </section>
-
-
-        <!-- RESULT SCREEN -->
-        <section id="result-screen" class="screen">
-
-            <div class="logo-small">GUESSED</div>
-
-            <div class="result-card">
-
-                <div class="category" id="result-category">
-                    ACTUAL PRICE
-                </div>
-
-                <div class="actual-answer" id="actual-answer">
-                    £86.42
-                </div>
-
-                <div class="guess-text">
-                    YOUR GUESS
-                </div>
-
-                <div class="your-answer" id="your-answer">
-                    £91.00
-                </div>
-
-                <div class="score-divider"></div>
-
-                <div class="score-label">YOUR SCORE</div>
-
-                <div class="score" id="score">
-                    94
-                </div>
-
-                <div class="score-message" id="score-message">
-                    VERY CLOSE 👏
-                </div>
-
-                <button id="next-button">NEXT →</button>
-
-            </div>
-
-        </section>
-
-
-        <!-- FINAL SCREEN -->
-        <section id="final-screen" class="screen">
-
-            <div class="logo">GUESSED</div>
-
-            <p class="tagline">Today's game complete.</p>
-
-            <div class="final-card">
-
-                <div class="final-label">YOUR SCORE</div>
-
-                <div class="final-score" id="final-score">
-                    421
-                </div>
-
-                <div class="out-of">OUT OF 500</div>
-
-                <div class="performance">
-                    You beat <strong id="percentile">76%</strong> of players.
-                </div>
-
-                <div class="result-grid">
-
-                    <div>
-                        <span>PRICE</span>
-                        <strong id="price-score">94</strong>
-                    </div>
-
-                    <div>
-                        <span>SCALE</span>
-                        <strong>87</strong>
-                    </div>
-
-                    <div>
-                        <span>HUMAN</span>
-                        <strong>76</strong>
-                    </div>
-
-                    <div>
-                        <span>CROWD</span>
-                        <strong>91</strong>
-                    </div>
-
-                    <div>
-                        <span>TIME</span>
-                        <strong>73</strong>
-                    </div>
-
-                </div>
-
-                <button id="play-again">PLAY AGAIN</button>
-
-            </div>
-
-        </section>
-
-    </main>
-
-    <script src="script.js"></script>
-
+<body data-scene="home-screen">
+  <div class="background-scene" aria-hidden="true" inert>
+    <span class="shape blob blob-one"></span>
+    <span class="shape blob blob-two"></span>
+    <span class="orb orb-one"></span>
+    <span class="orb orb-two"></span>
+    <span class="orb orb-three"></span>
+    <span class="arc arc-one"></span>
+    <span class="arc arc-two"></span>
+    <span class="dot-field"></span>
+    <span class="spark spark-one">✦</span>
+    <span class="spark spark-two">✧</span>
+    <span class="spark spark-three">✦</span>
+    <span class="result-particle particle-one"></span>
+    <span class="result-particle particle-two"></span>
+    <span class="result-particle particle-three">✦</span>
+    <span class="result-particle particle-four"></span>
+  </div>
+  <main class="game-container">
+    <section id="home-screen" class="screen active" aria-labelledby="home-title">
+      <header class="brand-lockup">
+        <div class="logo">GUESSED<span class="brand-dot">.</span></div>
+        <p class="tagline">How good is your intuition?</p>
+      </header>
+      <article class="home-card">
+        <div class="eyebrow"><span class="live-dot" aria-hidden="true"></span> TODAY'S GAME</div>
+        <h1 id="home-title">5 questions.<br>5 different ways to think.</h1>
+        <p class="home-copy">A quick daily check of what your gut already knows.</p>
+        <button id="start-button" class="primary-button" type="button">PLAY TODAY <span aria-hidden="true">→</span></button>
+        <div class="card-footnote">Takes about 2 minutes <span aria-hidden="true">·</span> No sign-up needed</div>
+      </article>
+      <div class="streak"><span class="flame" aria-hidden="true">🔥</span><span><strong id="streak-number">0</strong> day streak</span></div>
+      <p class="home-note">One new game, every day.</p>
+    </section>
+
+    <section id="question-screen" class="screen" aria-labelledby="question">
+      <header class="top-bar"><div class="logo-small">GUESSED<span class="brand-dot">.</span></div><div class="progress-wrap"><span class="progress-caption">TODAY'S GAME</span><span id="question-number" class="progress-count">1 / 5</span></div></header>
+      <div class="progress-track" aria-hidden="true"><span id="progress-fill"></span></div>
+      <article class="question-card">
+        <div class="eyebrow category"><span class="category-mark" aria-hidden="true"></span><span id="category">PRICE</span></div>
+        <h1 id="question">How much does a weekly supermarket shop for two people cost?</h1>
+        <label id="price-input-label" class="input-label" for="answer-input">YOUR ESTIMATE</label>
+        <div class="answer-area"><span class="currency" aria-hidden="true">£</span><input type="number" id="answer-input" placeholder="0" min="0.01" step="0.01" inputmode="decimal" aria-label="Your price guess in pounds" autocomplete="off"></div>
+        <div id="scale-input" class="scale-input" hidden>
+          <output id="scale-estimate" class="scale-estimate" for="scale-slider">0 m</output>
+          <label class="input-label" for="scale-slider">YOUR ESTIMATE</label>
+          <input id="scale-slider" class="scale-slider" type="range" min="0" max="500" step="1" value="0" aria-label="Your measurement estimate">
+          <div class="scale-endpoints" aria-hidden="true"><span id="scale-min">0 m</span><span id="scale-max">500 m</span></div>
+        </div>
+        <button id="submit-button" class="primary-button" type="button">SUBMIT GUESS <span aria-hidden="true">→</span></button>
+
+        <p class="hint">Trust your instinct.</p>
+      </article>
+      <p class="screen-footnote">Your first thought is usually your best one.</p>
+    </section>
+
+    <section id="result-screen" class="screen" aria-labelledby="result-title" aria-live="polite">
+      <header class="top-bar"><div class="logo-small">GUESSED<span class="brand-dot">.</span></div><div class="progress-wrap"><span class="progress-caption">QUESTION</span><span id="result-question-number" class="progress-count">1 / 5</span></div></header>
+      <article class="result-card">
+        <div class="guess-block"><div class="small-label">YOUR GUESS</div><div class="your-answer" id="your-answer">£91.00</div></div>
+        <div class="reveal-connector" aria-hidden="true"><span></span> THEN <span></span></div>
+        <div class="actual-block"><div class="result-category" id="result-category">ACTUAL PRICE</div><div class="actual-answer" id="actual-answer">£86.42</div></div>
+        <div class="score-divider"></div>
+        <div class="score-label" id="result-title">YOUR SCORE</div>
+        <div class="score" id="score" aria-label="Score">0</div>
+        <div class="score-message" id="score-message">VERY CLOSE</div>
+        <button id="next-button" class="primary-button" type="button">NEXT <span aria-hidden="true">→</span></button>
+      </article>
+    </section>
+
+    <section id="final-screen" class="screen" aria-labelledby="final-title">
+      <header class="brand-lockup final-brand"><div class="logo">GUESSED<span class="brand-dot">.</span></div><p class="tagline" id="final-title">Today's game complete.</p></header>
+      <article class="final-card">
+        <div class="final-label">YOUR SCORE</div>
+        <div class="final-score-line"><div class="final-score" id="final-score">421</div><span class="final-score-slash" aria-hidden="true">/</span><div class="out-of">500<br><span>POINTS</span></div></div>
+        <div class="performance">You beat <strong id="percentile">76%</strong> of players.</div>
+        <div class="result-grid" aria-label="Category scores">
+          <div class="category-score"><span>PRICE</span><strong id="price-score">0</strong></div>
+          <div class="category-score"><span>SCALE</span><strong id="scale-score">0</strong></div>
+        </div>
+        <button id="play-again" class="primary-button" type="button">PLAY AGAIN <span aria-hidden="true">↻</span></button>
+      </article>
+    </section>
+  </main>
+  <script src="script.js"></script>
 </body>
 </html>
