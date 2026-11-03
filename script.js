@@ -4,7 +4,7 @@
 // (a top-level `const performance` used to break the score animation).
 (function () {
   const ROUND_TYPES = Object.freeze(["price", "scale", "human", "crowd", "time"]);
-  const QUESTION_BANK_VERSION = 1;
+  const QUESTION_BANK_VERSION = 2;   // bumped when the bank changes, so the daily rotation stays fair
   const DAILY_GAME_EPOCH = "2026-10-02";
   const SHARE_URL = "https://joshuat09.github.io/guessed/";
   const RESULT_ICONS = { price: "💷", scale: "📏", human: "🧠", crowd: "👥", time: "⏳" };
@@ -145,6 +145,8 @@
   const timeGuessYear = $("time-guess-year");
   const scoreDisplay = $("score");
   const scoreMessage = $("score-message");
+  const crowdDataStatus = $("crowd-data-status");
+  const resultSource = $("result-source");
 
   // Final screen
   const dailyGameNumberDisplay = $("daily-game-number");
@@ -259,7 +261,27 @@
     return Math.round(Math.max(0, Math.min(100, (item.crowdDistribution[optionId] / topPercentage) * 100)));
   }
 
+  // Links each answer to where its figure came from, when the question has a source.
+  function renderSource(item) {
+    resultSource.replaceChildren();
+    resultSource.hidden = !item.source;
+    if (!item.source) return;
+    resultSource.append("Source: ");
+    if (/^https:\/\//.test(item.sourceUrl || "")) {
+      const link = document.createElement("a");
+      link.href = item.sourceUrl;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.textContent = item.source;
+      resultSource.append(link);
+    } else {
+      resultSource.append(item.source);
+    }
+    if (item.sourceNote) resultSource.append(` · ${item.sourceNote}`);
+  }
+
   function renderCrowdResults(item, selectedId) {
+    crowdDataStatus.textContent = item.dataStatus === "sourced" ? `REAL POLL · ${item.source.toUpperCase()}` : "SIMULATED CROWD · DEVELOPMENT DATA";
     const topOption = getCrowdTopOption(item);
     const sortedOptions = [...item.options].sort((a, b) => item.crowdDistribution[b.id] - item.crowdDistribution[a.id]);
     crowdResultList.replaceChildren();
@@ -320,6 +342,8 @@
     submitButton.disabled = item.type === "crowd";
     submitButton.firstChild.textContent = SUBMIT_LABELS[item.type];
     selectedCrowdOption = null;
+
+    humanDataNote.textContent = item.verified && item.source ? `Source: ${item.source}` : "Development placeholder data — not research-verified.";
 
     switch (item.type) {
       case "scale":
@@ -433,7 +457,8 @@
       yourAnswer.textContent = formatValue(guess, item);
       if (item.type === "time") renderTimeResult(item, guess);
     }
-    resultCategory.textContent = item.type === "price" ? "ACTUAL PRICE" : item.type === "human" ? "ACTUAL · DEVELOPMENT DATA" : "ACTUAL";
+    resultCategory.textContent = item.type === "price" ? "ACTUAL PRICE" : item.type === "human" && !item.verified ? "ACTUAL · DEVELOPMENT DATA" : "ACTUAL";
+    renderSource(item);
     scoreMessage.textContent = getScoreMessage(questionScore, item.type);
     document.body.dataset.celebration = questionScore >= 85 ? "high" : questionScore >= 50 ? "close" : "low";
 
@@ -442,6 +467,239 @@
     const isLast = currentQuestion === questions.length - 1;
     nextButton.innerHTML = isLast ? 'SEE RESULTS <span aria-hidden="true">→</span>' : 'NEXT <span aria-hidden="true">→</span>';
     nextButton.focus({ preventScroll: true });
+  }
+
+  /* ---------- Stats (saved on this device only) ---------- */
+
+  const STATS_KEY = "guessed-stats-v1";
+  const homeStats = $("home-stats");
+  const statsPanel = $("stats-panel");
+  const statsTiles = $("stats-tiles");
+  const statsChart = $("stats-chart");
+  const statsNote = $("stats-note");
+  const shareImageButton = $("share-image");
+  const gameTag = (game) => (game >= 1 ? `#${String(game).padStart(3, "0")}` : "—");
+
+  function loadStats() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STATS_KEY));
+      if (saved && saved.version === 1 && saved.daily && saved.modes) return saved;
+    } catch (error) {
+      // storage unavailable or unreadable: start fresh
+    }
+    return { version: 1, daily: {}, modes: {} };
+  }
+
+  function saveStats(stats) {
+    try {
+      localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+    } catch (error) {
+      // private browsing or storage full: stats simply aren't kept
+    }
+  }
+
+  // Like other daily games, only the first daily game of each day counts.
+  function recordResult() {
+    const stats = loadStats();
+    const max = questions.length * 100;
+    let counted = false;
+    if (gameMode) {
+      const mode = stats.modes[gameMode] || { played: 0, best: 0, total: 0, max };
+      mode.played += 1;
+      mode.best = Math.max(mode.best, totalScore);
+      mode.total += totalScore;
+      mode.max = max;
+      stats.modes[gameMode] = mode;
+      counted = true;
+    } else if (!stats.daily[dailyDateKey]) {
+      stats.daily[dailyDateKey] = { game: getDailyGameNumber(dailyDateKey), score: totalScore, max, rounds: roundResults.map((result) => [result.type, result.score]) };
+      counted = true;
+    }
+    if (counted) saveStats(stats);
+    return { stats, counted };
+  }
+
+  function dailySummary(stats, todayKey = getDailyDateKey()) {
+    const entries = Object.values(stats.daily);
+    const byGame = new Map(entries.map((entry) => [entry.game, entry]));
+    const today = getDailyGameNumber(todayKey);
+    // A streak survives until the end of today, so count back from yesterday if today isn't played yet.
+    let current = 0;
+    for (let game = byGame.has(today) ? today : today - 1; byGame.has(game); game -= 1) current += 1;
+    let bestStreak = 0;
+    let run = 0;
+    let previous = null;
+    [...byGame.keys()].sort((a, b) => a - b).forEach((game) => {
+      run = previous !== null && game === previous + 1 ? run + 1 : 1;
+      bestStreak = Math.max(bestStreak, run);
+      previous = game;
+    });
+    const scores = entries.map((entry) => entry.score);
+    return {
+      played: entries.length,
+      current,
+      bestStreak,
+      bestScore: scores.length ? Math.max(...scores) : 0,
+      average: scores.length ? Math.round(scores.reduce((sum, value) => sum + value, 0) / scores.length) : 0,
+      today: byGame.get(today) || null,
+      week: Array.from({ length: 7 }, (_, index) => {
+        const game = today - 6 + index;
+        return { game, entry: byGame.get(game) || null, isToday: game === today };
+      })
+    };
+  }
+
+  function renderHomeStats() {
+    const summary = dailySummary(loadStats());
+    if (!summary.played) {
+      homeStats.hidden = true;
+      return;
+    }
+    const parts = [];
+    if (summary.today) parts.push(`Today ${summary.today.score}/${summary.today.max} ✓`);
+    if (summary.current > 0) parts.push(`🔥 ${summary.current}-day streak`);
+    parts.push(`${summary.played} played`, `best ${summary.bestScore}`);
+    homeStats.textContent = parts.join(" · ");
+    homeStats.hidden = false;
+  }
+
+  function statTile(label, value) {
+    const tile = document.createElement("div");
+    tile.className = "stats-tile";
+    const number = document.createElement("strong");
+    number.textContent = String(value);
+    const name = document.createElement("span");
+    name.textContent = label;
+    tile.append(number, name);
+    return tile;
+  }
+
+  function renderStats({ stats, counted }) {
+    statsTiles.replaceChildren();
+    statsChart.replaceChildren();
+    if (gameMode) {
+      const mode = stats.modes[gameMode];
+      statsTiles.append(statTile("PLAYED", mode.played), statTile("BEST", mode.best), statTile("AVERAGE", Math.round(mode.total / mode.played)));
+      statsChart.hidden = true;
+      statsNote.textContent = `Your ${gameMode.toUpperCase()} results are saved on this device only.`;
+    } else {
+      const summary = dailySummary(stats);
+      statsTiles.append(statTile("PLAYED", summary.played), statTile("STREAK", summary.current), statTile("BEST STREAK", summary.bestStreak), statTile("BEST SCORE", summary.bestScore));
+      summary.week.forEach(({ game, entry, isToday }) => {
+        const column = document.createElement("div");
+        column.className = `stats-bar${entry ? "" : " is-empty"}${isToday ? " is-today" : ""}`;
+        const track = document.createElement("div");
+        track.className = "stats-track";
+        const bar = document.createElement("i");
+        bar.style.height = entry ? `${Math.max(6, (entry.score / entry.max) * 100)}%` : "0";
+        track.append(bar);
+        const label = document.createElement("span");
+        label.textContent = gameTag(game);
+        const description = entry ? `GUESSED ${gameTag(game)}: ${entry.score} out of ${entry.max}` : `GUESSED ${gameTag(game)}: not played`;
+        column.title = description;
+        column.setAttribute("aria-label", description);
+        column.append(track, label);
+        statsChart.append(column);
+      });
+      statsChart.hidden = false;
+      statsNote.textContent = counted
+        ? "Saved on this device only. Your first game each day counts toward your streak."
+        : "Replays don't change your stats: only your first game each day counts.";
+    }
+    statsPanel.hidden = false;
+  }
+
+  /* ---------- Share image ---------- */
+
+  function categoryAverages() {
+    const groups = {};
+    roundResults.forEach((result) => { (groups[result.type] = groups[result.type] || []).push(result.score); });
+    return ROUND_TYPES.filter((type) => groups[type]).map((type) => [type, Math.round(groups[type].reduce((sum, value) => sum + value, 0) / groups[type].length)]);
+  }
+
+  function drawShareCard() {
+    const size = 1080;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const g = canvas.getContext("2d");
+    const font = (weight, px) => `${weight} ${px}px -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif`;
+    g.fillStyle = "#f6f2e9";
+    g.fillRect(0, 0, size, size);
+    g.fillStyle = "rgba(233, 174, 67, .28)";
+    g.beginPath(); g.arc(970, 110, 260, 0, Math.PI * 2); g.fill();
+    g.fillStyle = "rgba(98, 170, 160, .22)";
+    g.beginPath(); g.arc(80, 1010, 250, 0, Math.PI * 2); g.fill();
+
+    g.textBaseline = "alphabetic";
+    g.fillStyle = "#191a17";
+    g.font = font(900, 84);
+    g.fillText("GUESSED", 90, 190);
+    g.fillStyle = "#d65335";
+    g.fillText(".", 90 + g.measureText("GUESSED").width, 190);
+    g.fillStyle = "#686a62";
+    g.font = font(800, 34);
+    g.fillText(gameLabel(), 90, 255);
+
+    g.fillStyle = "#191a17";
+    g.font = font(900, 210);
+    g.fillText(String(totalScore), 82, 500);
+    const scoreWidth = g.measureText(String(totalScore)).width;
+    g.fillStyle = "#686a62";
+    g.font = font(800, 58);
+    g.fillText(`/ ${questions.length * 100}`, 82 + scoreWidth + 22, 500);
+
+    const colors = { price: "#d65335", scale: "#e9ae43", human: "#62aaa0", crowd: "#a79bc9", time: "#c98a6f" };
+    let y = 600;
+    categoryAverages().forEach(([type, score]) => {
+      g.fillStyle = "#191a17";
+      g.font = font(800, 32);
+      g.fillText(`${RESULT_ICONS[type]}  ${type.toUpperCase()}`, 90, y + 26);
+      g.fillStyle = "#e6e5dd";
+      g.fillRect(400, y, 480, 30);
+      g.fillStyle = colors[type];
+      g.fillRect(400, y, 480 * (score / 100), 30);
+      g.fillStyle = "#191a17";
+      g.textAlign = "right";
+      g.fillText(String(score), 990, y + 26);
+      g.textAlign = "left";
+      y += 66;
+    });
+
+    g.fillStyle = "#686a62";
+    g.font = font(700, 30);
+    const summary = gameMode ? null : dailySummary(loadStats());
+    if (summary && summary.current > 0) g.fillText(`🔥 ${summary.current}-day streak`, 90, 980);
+    g.textAlign = "right";
+    g.fillText("joshuat09.github.io/guessed", 990, 980);
+    g.textAlign = "left";
+    return canvas;
+  }
+
+  async function shareImage() {
+    const canvas = drawShareCard();
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (!blob) return;
+    const name = `${gameLabel().toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
+    const file = new File([blob], name, { type: "image/png" });
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], text: `${gameLabel()}: ${totalScore}/${questions.length * 100} on GUESSED` });
+        return;
+      }
+    } catch (error) {
+      if (error && error.name === "AbortError") return;   // the player closed the share sheet
+    }
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = name;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 2000);
+    shareImageButton.textContent = "IMAGE SAVED";
+    window.setTimeout(() => { shareImageButton.textContent = "SHARE IMAGE"; }, 1800);
   }
 
   /* ---------- Finishing and starting ---------- */
@@ -471,6 +729,7 @@
       card.append(label, value);
       categoryScoreList.append(card);
     });
+    renderStats(recordResult());
     showScreen(finalScreen);
   }
 
@@ -504,6 +763,7 @@
 
   function returnHome() {
     homeDailyNumberDisplay.textContent = dailyLabel(getDailyDateKey());
+    renderHomeStats();
     showScreen(homeScreen);
   }
 
@@ -548,6 +808,14 @@
   async function copyResult() {
     const lines = roundResults.map((result) => `${RESULT_ICONS[result.type]} ${result.score}`);
     const text = `${gameLabel()}\n\n${totalScore}/${questions.length * 100}\n\n${lines.join("\n")}\n\nPlay GUESSED:\n${SHARE_URL}`;
+    if (navigator.share && window.matchMedia("(pointer: coarse)").matches) {
+      try {
+        await navigator.share({ text });
+        return;
+      } catch (error) {
+        if (error && error.name === "AbortError") return;
+      }
+    }
     if (await copyToClipboard(text)) {
       copyResultButton.textContent = "COPIED!";
     } else {
@@ -565,12 +833,14 @@
   const submitOnEnter = (event) => { if (event.key === "Enter") submitGuess(); };
 
   homeDailyNumberDisplay.textContent = dailyLabel(getDailyDateKey());
+  renderHomeStats();
   startButton.addEventListener("click", startDailyGame);
   document.querySelectorAll("[data-mode]").forEach((button) => button.addEventListener("click", () => startModeGame(button.dataset.mode)));
   playAgainButton.addEventListener("click", () => startGame(dailyDateKey || getDailyDateKey()));
   submitButton.addEventListener("click", submitGuess);
   nextButton.addEventListener("click", goToNext);
   copyResultButton.addEventListener("click", copyResult);
+  shareImageButton.addEventListener("click", shareImage);
   ["game-home-button", "result-home-button", "final-home-button"].forEach((id) => $(id).addEventListener("click", returnHome));
   scaleSlider.addEventListener("input", updateScaleEstimate);
   timeSlider.addEventListener("input", updateTimeEstimate);

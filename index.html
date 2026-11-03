@@ -38,6 +38,7 @@
         <div class="eyebrow"><span class="live-dot" aria-hidden="true"></span> DAILY CHALLENGE</div>
         <div class="daily-title-row"><h2>DAILY 5</h2><span id="home-daily-number" class="daily-number">GUESSED #001</span></div>
         <p class="home-copy">5 questions. Same for everyone. Every day.</p>
+        <p id="home-stats" class="home-stats" hidden></p>
         <button id="start-button" class="primary-button" type="button">PLAY TODAY <span aria-hidden="true">→</span></button>
       </article>
       <section class="mode-section" aria-labelledby="mode-heading">
@@ -94,8 +95,8 @@
         <div id="guess-block" class="guess-block"><div class="small-label">YOUR GUESS</div><div class="your-answer" id="your-answer">£91.00</div></div>
         <div id="reveal-connector" class="reveal-connector" aria-hidden="true"><span></span> THEN <span></span></div>
         <div id="actual-block" class="actual-block"><div class="result-category" id="result-category">ACTUAL PRICE</div><div class="actual-answer" id="actual-answer">£86.42</div></div>
-        <section id="crowd-results" class="crowd-results" aria-label="Simulated crowd results" hidden>
-          <div class="crowd-data-status">SIMULATED CROWD · DEVELOPMENT DATA</div>
+        <section id="crowd-results" class="crowd-results" aria-label="Crowd results" hidden>
+          <div id="crowd-data-status" class="crowd-data-status">SIMULATED CROWD · DEVELOPMENT DATA</div>
           <h2 class="crowd-results-title">WHAT THE CROWD CHOSE</h2>
           <div id="crowd-result-list" class="crowd-result-list"></div>
           <div class="crowd-pick-summary">
@@ -108,6 +109,7 @@
           <div class="time-result-rail" aria-hidden="true"><span id="time-actual-marker" class="time-result-marker actual-marker"></span><span id="time-guess-marker" class="time-result-marker guess-marker"></span></div>
           <figcaption class="time-result-legend"><span>ACTUAL <strong id="time-actual-year"></strong></span><span>YOUR GUESS <strong id="time-guess-year"></strong></span></figcaption>
         </figure>
+        <p id="result-source" class="result-source" hidden></p>
         <div class="score-divider"></div>
         <div class="score-label" id="result-title">YOUR SCORE</div>
         <div class="score" id="score" aria-label="Score">0</div>
@@ -124,7 +126,14 @@
         <div class="final-score-line"><div class="final-score" id="final-score">421</div><span class="final-score-slash" aria-hidden="true">/</span><div class="out-of"><span id="score-maximum">500</span><br><span>POINTS</span></div></div>
         <div id="performance" class="performance">That’s an average of <strong id="average-score">84</strong> per question.</div>
         <div id="category-score-list" class="result-grid" aria-label="Category scores"></div>
+        <section id="stats-panel" class="stats-panel" aria-label="Your stats" hidden>
+          <div class="stats-title">YOUR STATS</div>
+          <div id="stats-tiles" class="stats-tiles"></div>
+          <div id="stats-chart" class="stats-chart" aria-label="Your last 7 daily scores"></div>
+          <p id="stats-note" class="stats-note"></p>
+        </section>
         <button id="copy-result" class="secondary-button" type="button">COPY RESULT</button>
+        <button id="share-image" class="secondary-button" type="button">SHARE IMAGE</button>
         <button id="play-again" class="primary-button" type="button">PLAY AGAIN <span aria-hidden="true">↻</span></button>
         <button id="final-home-button" class="text-button final-home-button" type="button">HOME</button>
       </article>
